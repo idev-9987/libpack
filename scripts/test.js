@@ -10,13 +10,13 @@ const cwd = process.cwd();
 
 const config = require(`${libPackages}`)
 
-if (config.packages) {
-  config.packages.forEach(packageName => {
-    process.chdir(path.resolve(__dirname, "../packages/" + packageName));
+if (config.libs.lengthl > 0) {
+  config.libs.forEach(packageName => {
+    process.chdir(path.resolve(__dirname, "../libs/" + packageName));
     exec("npm run test");
   });
 } else {
-  console.error("! error not foud packages in libpacks config file");
+  console.error("! error not foud libs in libpacks config file");
 }
 
 

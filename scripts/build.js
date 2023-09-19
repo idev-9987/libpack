@@ -1,6 +1,6 @@
 const path = require("path");
 const execSync = require("child_process").execSync;
-const { libPath } = require('../config/libpackPaths')
+const { libPackages } = require('../config/libpackPaths')
 
 function exec(cmd) {
   execSync(cmd, { stdio: "inherit", env: process.env });
@@ -8,7 +8,7 @@ function exec(cmd) {
 
 const cwd = process.cwd();
 
-const config = require(`${libPath}`)
+const config = require(`${libPackages}`)
 
 if (config.libs) {
   config.libs.forEach(packageName => {
