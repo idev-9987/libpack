@@ -1,0 +1,12 @@
+.gitignore
+
+package-lock.json
+
+libpack.config.json
+libpack.config.js
+libpack.json
+libpack.js
+
+libs
+node_modules
+web
