@@ -1,10 +1,11 @@
 {
   "name": "libpacks",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "",
   "scripts": {
-    "build": "node ./bin/libpacks.js",
-    "install": "node ./bin/libpacks.js",
+    "build": "node ./bin/libpacks.js build",
+    "install": "node ./bin/libpacks.js install",
+    "create": "node ./bin/libpacks.js create my-libpacks --template default",
     "test": "node ./bin/libpacks.js"
   },
   "bin": {
