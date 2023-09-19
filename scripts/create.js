@@ -593,8 +593,10 @@ function getInstallPackage(version, originalDirectory) {
 }
 
 function getTemplateInstallPackage(template, originalDirectory) {
+
   let templateToInstall = 'libpack-template';
   if (template) {
+    console.log(template);
     if (template.match(/^file:/)) {
       templateToInstall = `file:${path.resolve(
         originalDirectory,
