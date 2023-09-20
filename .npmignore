@@ -11,3 +11,5 @@ libs
 node_modules
 web
 my-libpacks
+packages
+examples

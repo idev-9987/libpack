@@ -10,14 +10,14 @@ const cwd = process.cwd();
 
 const config = require(`${libPackages}`)
 
-if (config.web) {
-
-  process.chdir(path.resolve(__dirname, "../web/" + config.web));
-  exec("npm start");
+if (config.examples.lengthl > 0) {
+  config.examples.forEach(packageName => {
+    process.chdir(path.resolve(__dirname, "../examples/" + packageName));
+    exec("npm start");
+  });
 } else {
-  console.error("! error not foud web in libpacks config file");
+  console.error("! error not foud examples in libpacks config file");
 }
-
 
 process.chdir(cwd);
 

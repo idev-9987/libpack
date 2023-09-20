@@ -1,0 +1,26 @@
+{
+  "name": "libpack-template-lib",
+  "version": "1.0.2",
+  "keywords": [
+    "react",
+    "libpacks",
+    "template"
+  ],
+  "description": "The base template for Lib Pack.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/idev-code/libpack-template-lib.git",
+    "directory": "libpack-template-lib"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=14"
+  },
+  "bugs": {
+    "url": "https://github.com/idev-code/libpack-template-lib/issues"
+  },
+  "files": [
+    "template",
+    "template.json"
+  ]
+}
