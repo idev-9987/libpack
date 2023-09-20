@@ -181,16 +181,19 @@ module.exports = function (
   appPackage.dependencies = appPackage.dependencies || {};
 
   // Setup the script rules
-  // const templateScripts = templatePackage.scripts || {};
-  // appPackage.scripts = Object.assign(
-  //   {
-  //     start: 'libpacks start',
-  //     build: 'libpacks build',
-  //     install: 'libpacks install',
-  //     link: 'libpacks link',
-  //   },
-  //   templateScripts
-  // );
+  const templateScripts = templatePackage.scripts || {};
+  appPackage.scripts = Object.assign(
+    // {
+    //   start: 'libpacks start',
+    //   build: 'libpacks build',
+    //   install: 'libpacks install',
+    //   link: 'libpacks link',
+    // },
+    templateScripts
+  );
+
+  const templateWorkspaces = templatePackage.workspaces || [];
+  appPackage.workspaces = templateWorkspaces ? templateWorkspaces : undefined
 
   // Update scripts for Yarn users
   if (useYarn) {
