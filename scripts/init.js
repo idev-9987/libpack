@@ -305,6 +305,7 @@ module.exports = function (
   const dependenciesToInstall = Object.entries({
     ...templatePackage.dependencies,
     ...templatePackage.devDependencies,
+    ...templatePackage.peerDependencies,
   });
   if (dependenciesToInstall.length) {
     args = args.concat(
