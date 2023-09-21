@@ -27,7 +27,7 @@ const chalk = require('react-dev-utils/chalk');
 const webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
 const clearConsole = require('react-dev-utils/clearConsole');
-const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles');
+const checkRequiredFiles = require('./utils/checkRequiredFiles');
 const {
   choosePort,
   createCompiler,

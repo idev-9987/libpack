@@ -13,7 +13,7 @@ const cwd = process.cwd();
 
 const config = require(`${libPackages}`)
 
-if (config.examples.lengthl > 0) {
+if (config.examples.length > 0) {
   config.examples.forEach(packageName => {
     process.chdir(path.resolve(appDirectory, "examples/" + packageName));
     exec("npm start");

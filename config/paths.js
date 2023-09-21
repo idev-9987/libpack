@@ -121,7 +121,7 @@ if (
     !reactScriptsLinked &&
     __dirname.indexOf(path.join('config')) !== -1
 ) {
-    const templatePath = '../libpack-template-web/template';
+    const templatePath = appDirectory;
     module.exports = {
         dotenv: resolveOwn(`${templatePath}/.env`),
         appPath: resolveApp('.'),

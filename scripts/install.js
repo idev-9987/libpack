@@ -13,13 +13,22 @@ const cwd = process.cwd();
 console.log(libPackages);
 const config = require(`${libPackages}`)
 
-if (config.packages.lengthl > 0) {
+if (config.packages.length > 0) {
   config.packages.forEach(packageName => {
     process.chdir(path.resolve(appDirectory, "packages/" + packageName));
     exec("npm i");
   });
 } else {
   console.error("! error not foud packages in libpacks config file");
+}
+
+if (config.examples.length > 0) {
+  config.examples.forEach(packageName => {
+    process.chdir(path.resolve(appDirectory, "examples/" + packageName));
+    exec("npm i");
+  });
+} else {
+  console.error("! error not foud examples in libpacks config file");
 }
 
 

@@ -25,7 +25,7 @@ const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const paths = require('./libPaths');
-const modules = require('./modules');
+const modules = require('./libpackModules');
 const getClientEnvironment = require('./env');
 const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
 const ForkTsCheckerWebpackPlugin =
@@ -36,7 +36,7 @@ const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin'
 // @remove-on-eject-begin
 const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier');
 // @remove-on-eject-end
-const createEnvironmentHash = require('./webpack/persistentCache/createEnvironmentHash');
+// const createEnvironmentHash = require('../webpack/persistentCache/createEnvironmentHash');
 
 // Source maps are resource heavy and can cause out of memory issue for large source files.
 const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
@@ -216,10 +216,6 @@ module.exports = function (webpackEnv) {
                 ? 'index.chunk.js'
                 : isEnvDevelopment && 'index.bundle.chunk.js',
             assetModuleFilename: 'media/[name].[ext]',
-            // webpack uses `publicPath` to determine where the app is being served from.
-            // It requires a trailing slash, or the file assets will get an incorrect path.
-            // We inferred the "public path" (such as / or /my-project) from homepage.
-            publicPath: paths.publicUrlOrPath,
             // Point sourcemap entries to original disk location (format as URL on Windows)
         },
 
@@ -268,50 +264,6 @@ module.exports = function (webpackEnv) {
                 }),
                 // This is only used in production mode
                 new CssMinimizerPlugin(),
-            ],
-        },
-        resolve: {
-            // This allows you to set a fallback for where webpack should look for modules.
-            // We placed these paths second because we want `node_modules` to "win"
-            // if there are any conflicts. This matches Node resolution mechanism.
-            // https://github.com/facebook/create-react-app/issues/253
-            modules: ['node_modules', paths.appNodeModules].concat(
-                modules.additionalModulePaths || []
-            ),
-            // These are the reasonable defaults supported by the Node ecosystem.
-            // We also include JSX as a common component filename extension to support
-            // some tools, although we do not recommend using it, see:
-            // https://github.com/facebook/create-react-app/issues/290
-            // `web` extension prefixes have been added for better support
-            // for React Native Web.
-            extensions: paths.moduleFileExtensions
-                .map(ext => `.${ext}`)
-                .filter(ext => useTypeScript || !ext.includes('ts')),
-            alias: {
-                // Support React Native Web
-                // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
-                'react-native': 'react-native-web',
-                // Allows for better profiling with ReactDevTools
-                ...(isEnvProductionProfile && {
-                    'react-dom$': 'react-dom/profiling',
-                    'scheduler/tracing': 'scheduler/tracing-profiling',
-                }),
-                ...(modules.webpackAliases || {}),
-            },
-            plugins: [
-                // Prevents users from importing files from outside of src/ (or node_modules/).
-                // This often causes confusion because we only process files within src/ with babel.
-                // To fix this, we prevent you from importing files out of src/ -- if you'd like to,
-                // please link the files into your node_modules/ and let module-resolution kick in.
-                // Make sure your source files are compiled, as they will not be processed in any way.
-                new ModuleScopePlugin(paths.appSrc, [
-                    paths.appPackageJson,
-                    reactRefreshRuntimeEntry,
-                    reactRefreshWebpackPluginRuntimeEntry,
-                    babelRuntimeEntry,
-                    babelRuntimeEntryHelpers,
-                    babelRuntimeRegenerator,
-                ]),
             ],
         },
         module: {
@@ -572,44 +524,6 @@ module.exports = function (webpackEnv) {
             ].filter(Boolean),
         },
         plugins: [
-            // Generates an `index.html` file with the <script> injected.
-            new HtmlWebpackPlugin(
-                Object.assign(
-                    {},
-                    {
-                        inject: true,
-                        template: paths.appHtml,
-                    },
-                    isEnvProduction
-                        ? {
-                            minify: {
-                                removeComments: true,
-                                collapseWhitespace: true,
-                                removeRedundantAttributes: true,
-                                useShortDoctype: true,
-                                removeEmptyAttributes: true,
-                                removeStyleLinkTypeAttributes: true,
-                                keepClosingSlash: true,
-                                minifyJS: true,
-                                minifyCSS: true,
-                                minifyURLs: true,
-                            },
-                        }
-                        : undefined
-                )
-            ),
-            // Inlines the webpack runtime script. This script is too small to warrant
-            // a network request.
-            // https://github.com/facebook/create-react-app/issues/5358
-            isEnvProduction &&
-            shouldInlineRuntimeChunk &&
-            new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime-.+[.]js/]),
-            // Makes some environment variables available in index.html.
-            // The public URL is available as %PUBLIC_URL% in index.html, e.g.:
-            // <link rel="icon" href="%PUBLIC_URL%/favicon.ico">
-            // It will be an empty string unless you specify "homepage"
-            // in `package.json`, in which case it will be the pathname of that URL.
-            new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
             // This gives some necessary context to module not found errors, such as
             // the requesting resource.
             new ModuleNotFoundPlugin(paths.appPath),
@@ -634,32 +548,8 @@ module.exports = function (webpackEnv) {
             new MiniCssExtractPlugin({
                 // Options similar to the same options in webpackOptions.output
                 // both options are optional
-                filename: 'static/css/[name].[contenthash:8].css',
-                chunkFilename: 'static/css/[name].[contenthash:8].chunk.css',
-            }),
-            // Generate an asset manifest file with the following content:
-            // - "files" key: Mapping of all asset filenames to their corresponding
-            //   output file so that tools can pick it up without having to parse
-            //   `index.html`
-            // - "entrypoints" key: Array of files which are included in `index.html`,
-            //   can be used to reconstruct the HTML if necessary
-            new WebpackManifestPlugin({
-                fileName: 'asset-manifest.json',
-                publicPath: paths.publicUrlOrPath,
-                generate: (seed, files, entrypoints) => {
-                    const manifestFiles = files.reduce((manifest, file) => {
-                        manifest[file.name] = file.path;
-                        return manifest;
-                    }, seed);
-                    const entrypointFiles = entrypoints.main.filter(
-                        fileName => !fileName.endsWith('.map')
-                    );
-
-                    return {
-                        files: manifestFiles,
-                        entrypoints: entrypointFiles,
-                    };
-                },
+                filename: 'css/[name].[contenthash:8].css',
+                chunkFilename: 'css/[name].[contenthash:8].chunk.css',
             }),
             // Moment.js is an extremely popular library that bundles large locale files
             // by default due to how webpack interprets its code. This is a practical
@@ -682,54 +572,6 @@ module.exports = function (webpackEnv) {
                 // to make lazy-loading failure scenarios less likely.
                 // See https://github.com/cra-template/pwa/issues/13#issuecomment-722667270
                 maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-            }),
-            // TypeScript type checking
-            useTypeScript &&
-            new ForkTsCheckerWebpackPlugin({
-                async: isEnvDevelopment,
-                typescript: {
-                    typescriptPath: resolve.sync('typescript', {
-                        basedir: paths.appNodeModules,
-                    }),
-                    configOverwrite: {
-                        compilerOptions: {
-                            sourceMap: isEnvProduction
-                                ? shouldUseSourceMap
-                                : isEnvDevelopment,
-                            skipLibCheck: true,
-                            inlineSourceMap: false,
-                            declarationMap: false,
-                            noEmit: true,
-                            incremental: true,
-                            tsBuildInfoFile: paths.appTsBuildInfoFile,
-                        },
-                    },
-                    context: paths.appPath,
-                    diagnosticOptions: {
-                        syntactic: true,
-                    },
-                    mode: 'write-references',
-                    // profile: true,
-                },
-                issue: {
-                    // This one is specifically to match during CI tests,
-                    // as micromatch doesn't match
-                    // '../cra-template-typescript/template/src/App.tsx'
-                    // otherwise.
-                    include: [
-                        { file: '../**/src/**/*.{ts,tsx}' },
-                        { file: '**/src/**/*.{ts,tsx}' },
-                    ],
-                    exclude: [
-                        { file: '**/src/**/__tests__/**' },
-                        { file: '**/src/**/?(*.){spec|test}.*' },
-                        { file: '**/src/setupProxy.*' },
-                        { file: '**/src/setupTests.*' },
-                    ],
-                },
-                logger: {
-                    infrastructure: 'silent',
-                },
             }),
             !disableESLintPlugin &&
             new ESLintPlugin({
