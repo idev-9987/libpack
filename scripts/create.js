@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-present, idev-9987, Inc.
+ * Copyright (c) 2015-present, idev-code, Inc.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -136,7 +136,7 @@ function init() {
       );
       console.log(
         `      ${chalk.cyan(
-          'https://github.com/idev-9987/libpack/issues/new'
+          'https://github.com/idev-code/libpacks/issues/new'
         )}`
       );
       console.log();
@@ -161,7 +161,7 @@ function init() {
             'Firefox',
             'Safari',
           ],
-          npmPackages: ['react', 'react-dom', packageJson.name],
+          npmPackages: [/*'react', 'react-dom',*/ packageJson.name],
           npmGlobalPackages: [packageJson.name],
         },
         {
@@ -330,7 +330,7 @@ function createApp(name, verbose, version, template, useYarn, usePnp) {
   );
 }
 
-function install(root, useYarn, usePnp, dependencies, verbose, isOnline) {
+function install(root, useYarn, usePnp, devDependencies, verbose, isOnline) {
   return new Promise((resolve, reject) => {
     let command;
     let args;
@@ -343,10 +343,10 @@ function install(root, useYarn, usePnp, dependencies, verbose, isOnline) {
       if (usePnp) {
         args.push('--enable-pnp');
       }
-      [].push.apply(args, dependencies);
+      [].push.apply(args, devDependencies);
 
       // Explicitly set cwd() to work around issues like
-      // https://github.com/idev-9987/libpack/issues/3326.
+      // https://github.com/idev-code/libpacks/issues/3326.
       // Unfortunately we can only do this for Yarn because npm support for
       // equivalent --prefix flag doesn't help with this issue.
       // This is why for npm, we run checkThatNpmCanReadCwd() early instead.
@@ -362,12 +362,12 @@ function install(root, useYarn, usePnp, dependencies, verbose, isOnline) {
       command = 'npm';
       args = [
         'install',
-        '--no-audit', // https://github.com/idev-9987/libpack/issues/11174
-        '--save',
-        '--save-exact',
+        '--no-audit', // https://github.com/idev-code/libpacks/issues/11174
+        '-D',
+        /*'--save-exact',*/
         '--loglevel',
         'error',
-      ].concat(dependencies);
+      ].concat(devDependencies);
 
       if (usePnp) {
         console.log(chalk.yellow("NPM doesn't support PnP."));
@@ -407,7 +407,7 @@ function run(
     getInstallPackage(version, originalDirectory),
     getTemplateInstallPackage(template, originalDirectory),
   ]).then(([packageToInstall, templateToInstall]) => {
-    const allDependencies = ['react', 'react-dom', packageToInstall];
+    const allDevDependencies = [/*'react', 'react-dom',*/ packageToInstall];
 
     console.log('Installing packages. This might take a couple of minutes.');
 
@@ -438,7 +438,7 @@ function run(
           templatesVersionMinimum
         );
         if (supportsTemplates) {
-          allDependencies.push(templateToInstall);
+          allDevDependencies.push(templateToInstall);
         } else if (template) {
           console.log('');
           console.log(
@@ -449,9 +449,7 @@ function run(
         }
 
         console.log(
-          `Installing ${chalk.cyan('react')}, ${chalk.cyan(
-            'react-dom'
-          )}, and ${chalk.cyan(packageInfo.name)}${supportsTemplates ? ` with ${chalk.cyan(templateInfo.name)}` : ''
+          `Installing ${chalk.cyan(packageInfo.name)}${supportsTemplates ? ` and ${chalk.cyan(templateInfo.name)}` : ''
           }...`
         );
         console.log();
@@ -460,7 +458,7 @@ function run(
           root,
           useYarn,
           usePnp,
-          allDependencies,
+          allDevDependencies,
           verbose,
           isOnline
         ).then(() => ({
@@ -473,23 +471,23 @@ function run(
         const packageName = packageInfo.name;
         const templateName = supportsTemplates ? templateInfo.name : undefined;
         checkNodeVersion(packageName);
-        setCaretRangeForRuntimeDeps(packageName);
+        // setCaretRangeForRuntimeDeps(packageName);
 
         const pnpPath = path.resolve(process.cwd(), '.pnp.js');
 
         const nodeArgs = fs.existsSync(pnpPath) ? ['--require', pnpPath] : [];
 
-        await executeNodeScript(
-          {
-            cwd: process.cwd(),
-            args: nodeArgs,
-          },
-          [root, appName, verbose, originalDirectory, templateName],
-          `
-        const init = require('${packageName}/scripts/init.js');
-        init.apply(null, JSON.parse(process.argv[1]));
-      `
-        );
+      //   await executeNodeScript(
+      //     {
+      //       cwd: process.cwd(),
+      //       args: nodeArgs,
+      //     },
+      //     [root, appName, verbose, originalDirectory, templateName],
+      //     `
+      //   const init = require('${packageName}/scripts/init.js');
+      //   init.apply(null, JSON.parse(process.argv[1]));
+      // `
+      //   );
 
         if (version === 'libpacks@1.0.x') {
           console.log(
@@ -839,8 +837,8 @@ function checkAppName(appName) {
   }
 
   // TODO: there should be a single place that holds the dependencies
-  const dependencies = ['react', 'react-dom', packageJson.name].sort();
-  if (dependencies.includes(appName)) {
+  const devDependencies = [/*'react', 'react-dom',*/ packageJson.name].sort();
+  if (devDependencies.includes(appName)) {
     console.error(
       chalk.red(
         `Cannot create a project named ${chalk.green(
@@ -848,7 +846,7 @@ function checkAppName(appName) {
         )} because a dependency with the same name exists.\n` +
         `Due to the way npm works, the following names are not allowed:\n\n`
       ) +
-      chalk.cyan(dependencies.map(depName => `  ${depName}`).join('\n')) +
+      chalk.cyan(devDependencies.map(depName => `  ${depName}`).join('\n')) +
       chalk.red('\n\nPlease choose a different project name.')
     );
     process.exit(1);
@@ -902,7 +900,7 @@ function setCaretRangeForRuntimeDeps(packageName) {
 // Also, if project contains remnant error logs from a previous
 // installation, lets remove them now.
 // We also special case IJ-based products .idea because it integrates with CRA:
-// https://github.com/idev-9987/libpack/pull/368#issuecomment-243446094
+// https://github.com/idev-code/libpacks/pull/368#issuecomment-243446094
 function isSafeToCreateProjectIn(root, name) {
   const validFiles = [
     '.DS_Store',
@@ -989,7 +987,7 @@ function getProxy() {
   }
 }
 
-// See https://github.com/idev-9987/libpack/pull/3355
+// See https://github.com/idev-code/libpacks/pull/3355
 function checkThatNpmCanReadCwd() {
   const cwd = process.cwd();
   let childOutput = null;
